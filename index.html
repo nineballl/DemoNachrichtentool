@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>myBVK Nachrichtentool – Prototyp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&family=PT+Serif:ital@0;1&display=swap">
+<style>
+:root{
+  --primary:#004899; --secondary:#ffc40a; --darkgray:#675e54; --ink:#1e1e1e;
+  --panel:#f2f2f2; --line:#d6d6d6; --field:#a9a39c; --error:#b3261e;
+  --tint:#dde7f5; --tint-ink:#003a7a; --closed:#ececec; --closed-ink:#4f4840;
+  --sans:Avenir,"Avenir Next","Nunito Sans","Segoe UI",system-ui,sans-serif;
+  --serif:"PT Serif",Georgia,serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:var(--darkgray);font-family:var(--sans)}
+a{color:var(--primary)}a:hover{color:#00306a}
+button,select,input,textarea{font-family:inherit}
+:is(button,a,select,input,textarea):focus-visible{outline:3px solid var(--primary);outline-offset:2px}
+.serif{font-family:var(--serif);font-weight:400;color:var(--primary)}
+.wrap{max-width:1200px;margin:0 auto;padding:40px 16px 64px;display:flex;flex-direction:column;gap:28px}
+.head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:20px}
+.head h1{margin:0;font-size:44px;line-height:1.15;font-weight:600}
+.head p{margin:8px 0 0;font-size:17px;line-height:1.5;max-width:640px}
+.btn{min-height:50px;padding:0 28px;border-radius:50px;font-size:18px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:10px}
+.btn-primary{border:none;background:var(--secondary);color:var(--ink)}
+.btn-outline{border:1px solid var(--secondary);background:#fff;color:var(--darkgray)}
+.work{display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start}
+.listcol{flex:1 1 380px;max-width:100%;min-width:0;display:flex;flex-direction:column;gap:12px}
+.detail{flex:999 1 560px;min-width:0;max-width:100%;background:var(--panel)}
+.tabs{display:flex;gap:4px;padding:4px;background:var(--panel)}
+.tab{flex:1 1 auto;white-space:nowrap;min-height:44px;padding:0 12px;border:none;cursor:pointer;font-size:15px;font-weight:600;background:transparent;color:var(--darkgray)}
+.tab[aria-selected="true"]{background:var(--primary);color:#fff}
+.tab span{font-weight:400}
+.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.item{width:100%;text-align:left;display:flex;flex-direction:column;gap:8px;padding:16px 18px;cursor:pointer;font:inherit;color:inherit;background:#fff;border:1px solid var(--line);margin:1px}
+.item[aria-current="true"]{border:2px solid var(--primary);margin:0;box-shadow:0 2px 8px rgba(0,72,153,.12)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.title{display:inline-flex;align-items:center;gap:8px;min-width:0}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--primary);flex:none}
+.clamp{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.subj{font-size:17px;color:var(--ink);font-weight:600}
+.subj.unread{font-weight:700}
+.date{font-size:14px;flex:none}
+.preview{font-size:15px;line-height:1.4}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.chip{font-size:13px;padding:3px 10px;border-radius:50px;border:1px solid #c8c8c8}
+.badge{font-size:13px;font-weight:600;padding:3px 10px;border-radius:50px}
+.b-open{background:var(--tint);color:var(--tint-ink)}
+.b-closed{background:var(--closed);color:var(--closed-ink)}
+.b-new{font-weight:700;background:var(--secondary);color:var(--ink)}
+.wait{font-size:13px}
+.empty{padding:32px 20px;text-align:center;background:var(--panel);font-size:16px}
+.pager{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding-top:4px}
+.pager .range{font-size:14px}
+.pager .btns{display:flex;gap:4px}
+.pg{min-width:44px;height:44px;padding:0 8px;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);background:#fff;color:var(--darkgray);cursor:pointer}
+.pg[aria-current="page"]{border-color:var(--primary);background:var(--primary);color:#fff;cursor:default}
+.pg:disabled{border-color:#e0e0e0;color:#b5b0aa;cursor:default}
+.dhead{padding:28px 32px 20px;background:var(--primary);color:#fff;display:flex;flex-direction:column;gap:10px}
+.dhead h2{margin:0;font-size:26px;line-height:1.25;font-weight:600}
+.meta{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:15px;align-items:center}
+.hb{font-weight:700;padding:2px 10px;border-radius:50px}
+.hb-open{background:var(--secondary);color:var(--ink)}
+.hb-closed{background:#fff;color:var(--primary)}
+.log{display:flex;flex-direction:column;gap:18px;padding:28px 32px}
+.msg{display:flex;flex-direction:column;gap:6px;max-width:82%}
+.msg.bvk{align-self:flex-start}
+.msg.me{align-self:flex-end;align-items:flex-end}
+.who{font-size:13px}
+.bubble{white-space:pre-line;font-size:16px;line-height:1.55;padding:14px 18px;color:var(--ink)}
+.bvk .bubble{background:#fff;border-radius:4px 16px 16px 16px}
+.me .bubble{background:var(--tint);border-radius:16px 4px 16px 16px}
+.pending{font-size:13px}
+.foot{padding:0 32px 32px}
+.closedbox{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px;background:#fff}
+.closedbox .txt{display:flex;gap:12px;align-items:flex-start;max-width:520px;font-size:16px;line-height:1.5}
+.composer{display:flex;flex-direction:column;gap:10px;padding:20px 24px;background:#fff}
+label{font-size:15px;font-weight:600}
+.field{width:100%;font-size:17px;color:var(--ink);background:#fff;padding:12px 14px;border-radius:4px;border:1px solid var(--field)}
+textarea.field{resize:vertical}
+select.field,input.field{min-height:50px}
+.field[aria-invalid="true"]{border:2px solid var(--error)}
+.err{font-size:14px;color:var(--error)}
+.hint{font-size:14px}
+.cbar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px}
+.cbar .right{display:flex;gap:10px;align-items:center}
+.newform{display:flex;flex-direction:column;gap:20px;padding:32px}
+.newform h2{margin:0;font-size:28px;font-weight:600}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.fld{display:flex;flex-direction:column;gap:6px}
+.x{width:44px;height:44px;border:none;border-radius:50%;background:#fff;color:var(--darkgray);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.none{padding:64px 32px;text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center;font-size:17px}
+.phone h2{margin:0;font-size:24px;font-weight:600}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:14px}
+.card{padding:18px 20px;background:var(--panel);display:flex;flex-direction:column;gap:4px;font-size:15px}
+.card a{font-size:20px;font-weight:700;text-decoration:none}
+.toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%);padding:14px 24px;background:var(--ink);color:#fff;font-size:16px;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.25);z-index:10}
+.demo{font-size:13px;text-align:center;color:var(--darkgray)}
+@media (max-width:600px){.head h1{font-size:34px}.log,.newform{padding:20px}.dhead{padding:22px 20px 16px}.foot{padding:0 20px 20px}.msg{max-width:92%}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div>
+      <h1>Meine <i class="serif">Nachrichten</i></h1>
+      <p>Schreiben Sie uns direkt aus myBVK. Antworten der BVK erscheinen hier, sobald sie vorliegen – das kann einige Minuten dauern.</p>
+    </div>
+    <button type="button" class="btn btn-primary" data-act="new">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      Neue Nachricht
+    </button>
+  </div>
+
+  <div class="work">
+    <div class="listcol" id="listcol"></div>
+    <div class="detail" id="detail"></div>
+  </div>
+
+  <div class="phone">
+    <h2>Lieber <i class="serif">telefonisch?</i></h2>
+    <div class="cards">
+      <div class="card">Kundendienst Vorsorge<a href="tel:+41584704545">058 470 45 45</a></div>
+      <div class="card">Support myBVK<a href="tel:+41584704400">058 470 44 00</a></div>
+      <div class="card">Kundendienst Invalidenleistung<a href="tel:+41584704480">058 470 44 80</a></div>
+      <div class="card">Beratung zur Pensionskasse<a href="https://bvk.ch/de/services/vorsorgeberatung" target="_blank" rel="noopener" style="font-size:17px;text-decoration:underline">Weitere Infos</a></div>
+    </div>
+  </div>
+  <p class="demo">Prototyp mit Demo-Daten – es werden keine Nachrichten übermittelt.</p>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  var d = function (y, mo, da, h, mi) { return new Date(y, mo - 1, da, h, mi).getTime(); };
+  var TOPICS = { '1': 'Wohneigentumsförderung', '2': 'Einkauf', '3': 'Pensionierung', '16': 'Hypothekenanfrage', '9': 'Feedback', '8': 'Sonstiges' };
+  var PER = 5;
+  var S = {
+    filter: 'alle', page: 1, selectedId: 'c1', composing: false, reopen: false,
+    errDraft: false, errTopic: false, errSubject: false, errMsg: false,
+    cases: [
+      { id: 'c1', subject: 'Frage zum Einkauf 2026', topic: 'Einkauf', status: 'open', unread: true, messages: [
+        { bvk: false, text: 'Guten Tag\nIch möchte dieses Jahr noch einen Einkauf machen. Bis wann muss die Zahlung bei Ihnen eingehen?', ts: d(2026,10,14,9,12) },
+        { bvk: true, text: 'Guten Tag Herr Test1\nVielen Dank für Ihre Anfrage. Die Angaben zu Ihrem Einkaufspotenzial und den Fristen haben wir Ihnen unter «Dokumente» abgelegt.\nFreundliche Grüsse\nKundendienst Vorsorge', ts: d(2026,10,19,15,40) } ] },
+      { id: 'c2', subject: 'Vorbezug für Wohneigentum', topic: 'Wohneigentumsförderung', status: 'open', unread: false, messages: [
+        { bvk: false, text: 'Welche Unterlagen benötigen Sie für einen Vorbezug?', ts: d(2026,10,17,11,5) } ] },
+      { id: 'c6', subject: 'Hypothek für Eigenheim in Winterthur', topic: 'Hypothekenanfrage', status: 'open', unread: true, messages: [
+        { bvk: false, text: 'Bietet die BVK auch Hypotheken für Versicherte an?', ts: d(2026,10,12,16,20) },
+        { bvk: true, text: 'Guten Tag Herr Test1\nJa, gerne. Eine Beraterin aus dem Team Hypotheken meldet sich in den nächsten Tagen telefonisch bei Ihnen.\nFreundliche Grüsse\nHypotheken', ts: d(2026,10,16,8,55) } ] },
+      { id: 'c7', subject: 'Begünstigtenordnung anpassen', topic: 'Sonstiges', status: 'open', unread: false, messages: [
+        { bvk: false, text: 'Ich möchte meine Begünstigtenordnung ändern. Wo finde ich das Formular?', ts: d(2026,10,9,13,30) },
+        { bvk: true, text: 'Das Formular finden Sie unter «Formulare und Merkblätter». Senden Sie es uns unterschrieben zurück.\nFreundliche Grüsse\nKundendienst Vorsorge', ts: d(2026,10,10,9,5) },
+        { bvk: false, text: 'Danke. Kann ich es auch eingescannt hochladen?', ts: d(2026,10,10,18,42) } ] },
+      { id: 'c8', subject: 'Einkauf nach Scheidung', topic: 'Einkauf', status: 'open', unread: false, messages: [
+        { bvk: false, text: 'Kann ich den Betrag, der bei der Scheidung übertragen wurde, wieder einkaufen?', ts: d(2026,10,6,10,0) } ] },
+      { id: 'c9', subject: 'Steuerbescheinigung 2025', topic: 'Sonstiges', status: 'closed', unread: false, messages: [
+        { bvk: false, text: 'Ich finde die Steuerbescheinigung für meinen Einkauf 2025 nicht.', ts: d(2026,3,12,20,15) },
+        { bvk: true, text: 'Die Bescheinigung liegt nun unter «Dokumente» für Sie bereit.\nFreundliche Grüsse\nKundendienst Vorsorge', ts: d(2026,3,13,11,20) } ] },
+      { id: 'c10', subject: 'Vorbezug für Amortisation', topic: 'Wohneigentumsförderung', status: 'closed', unread: false, messages: [
+        { bvk: false, text: 'Kann ich einen Vorbezug auch für die Amortisation meiner Hypothek verwenden?', ts: d(2026,5,8,9,40) },
+        { bvk: true, text: 'Die Voraussetzungen dazu finden Sie im Merkblatt Wohneigentumsförderung. Gerne beraten wir Sie auch telefonisch.\nFreundliche Grüsse\nKundendienst Vorsorge', ts: d(2026,5,11,14,0) } ] },
+      { id: 'c11', subject: 'Login funktioniert nicht', topic: 'Sonstiges', status: 'closed', unread: false, messages: [
+        { bvk: false, text: 'Ich kann mich seit gestern nicht mehr anmelden.', ts: d(2026,7,14,7,10) },
+        { bvk: true, text: 'Wir haben Ihren Zugang zurückgesetzt. Sie erhalten einen neuen Aktivierungscode per Post.\nFreundliche Grüsse\nSupport myBVK', ts: d(2026,7,14,10,30) } ] },
+      { id: 'c12', subject: 'Teilpensionierung möglich?', topic: 'Pensionierung', status: 'closed', unread: false, messages: [
+        { bvk: false, text: 'Ist eine Teilpensionierung in mehreren Schritten möglich?', ts: d(2026,4,22,15,5) },
+        { bvk: true, text: 'Ja, das ist möglich. Die Details haben wir Ihnen per Post zugestellt.\nFreundliche Grüsse\nKundendienst Vorsorge', ts: d(2026,4,24,9,45) } ] },
+      { id: 'c13', subject: 'Lob für die neue Simulation', topic: 'Feedback', status: 'closed', unread: false, messages: [
+        { bvk: false, text: 'Die neue Pensionierungssimulation ist sehr übersichtlich – danke!', ts: d(2026,2,3,12,0) },
+        { bvk: true, text: 'Herzlichen Dank für Ihre Rückmeldung!\nFreundliche Grüsse\nSupport myBVK', ts: d(2026,2,4,8,30) } ] },
+      { id: 'c3', subject: 'Pensionierung per 1. April 2027', topic: 'Pensionierung', status: 'closed', unread: false, messages: [
+        { bvk: false, text: 'Ich plane meine Pensionierung per 1. April 2027. Wie gehe ich vor?', ts: d(2026,9,2,8,30) },
+        { bvk: true, text: 'Guten Tag Herr Test1\nGerne senden wir Ihnen die Unterlagen zur Pensionierung per Post zu. Bei Fragen sind wir jederzeit für Sie da.\nFreundliche Grüsse\nKundendienst Vorsorge', ts: d(2026,9,4,14,10) } ] },
+      { id: 'c4', subject: 'Feedback zur mobilen Ansicht', topic: 'Feedback', status: 'closed', unread: false, messages: [
+        { bvk: false, text: 'Auf dem Handy sind einige Seiten schwer zu bedienen.', ts: d(2026,8,21,19,2) },
+        { bvk: true, text: 'Vielen Dank für Ihr Feedback – wir haben es an das Team von myBVK weitergeleitet.\nFreundliche Grüsse\nSupport myBVK', ts: d(2026,8,22,10,15) } ] },
+      { id: 'c5', subject: 'Neue Postadresse', topic: 'Sonstiges', status: 'closed', unread: false, messages: [
+        { bvk: false, text: 'Ich bin umgezogen. Bitte passen Sie meine Adresse an.', ts: d(2026,6,3,7,45) },
+        { bvk: true, text: 'Ihre Adresse haben wir angepasst. Freundliche Grüsse\nKundendienst Vorsorge', ts: d(2026,6,4,9,0) } ] }
+    ]
+  };
+
+  var esc = function (t) { return String(t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var p2 = function (n) { return (n < 10 ? '0' : '') + n; };
+  function fmt(ts, withTime) {
+    var dt = new Date(ts), now = new Date(), time = p2(dt.getHours()) + ':' + p2(dt.getMinutes());
+    if (dt.toDateString() === now.toDateString()) return withTime ? 'Heute, ' + time : time;
+    if (dt.toDateString() === new Date(now.getTime() - 864e5).toDateString()) return withTime ? 'Gestern, ' + time : 'Gestern';
+    var date = p2(dt.getDate()) + '.' + p2(dt.getMonth() + 1) + '.' + dt.getFullYear();
+    return withTime ? date + ', ' + time : date;
+  }
+  var last = function (c) { return c.messages[c.messages.length - 1]; };
+  var byId = function (id) { return S.cases.filter(function (c) { return c.id === id; })[0]; };
+  var ICON_X = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+
+  function renderList() {
+    var sorted = S.cases.slice().sort(function (a, b) { return last(b).ts - last(a).ts; });
+    var nOpen = sorted.filter(function (c) { return c.status === 'open'; }).length;
+    var filtered = sorted.filter(function (c) {
+      return S.filter === 'alle' || (S.filter === 'offen' ? c.status === 'open' : c.status === 'closed');
+    });
+    var pages = Math.max(1, Math.ceil(filtered.length / PER));
+    S.page = Math.min(Math.max(1, S.page), pages);
+    var start = (S.page - 1) * PER, paged = filtered.slice(start, start + PER);
+
+    var tabs = [['offen', 'Offen', nOpen], ['abgeschlossen', 'Abgeschlossen', sorted.length - nOpen], ['alle', 'Alle', sorted.length]];
+    var h = '<div class="tabs" role="tablist" aria-label="Nachrichten filtern">' + tabs.map(function (t) {
+      return '<button type="button" class="tab" role="tab" aria-selected="' + (S.filter === t[0]) + '" data-act="filter" data-v="' + t[0] + '">' + t[1] + ' <span>(' + t[2] + ')</span></button>';
+    }).join('') + '</div>';
+
+    if (!paged.length) h += '<div class="empty">' + (S.filter === 'offen' ? 'Sie haben keine offenen Anfragen.' : 'Keine Nachrichten vorhanden.') + '</div>';
+
+    h += '<ul class="list">' + paged.map(function (c) {
+      var lm = last(c), sel = !S.composing && c.id === S.selectedId, open = c.status === 'open';
+      return '<li><button type="button" class="item" data-act="select" data-v="' + c.id + '" aria-current="' + sel + '">' +
+        '<span class="row"><span class="title">' + (c.unread ? '<span class="dot" aria-hidden="true"></span>' : '') +
+        '<span class="subj clamp' + (c.unread ? ' unread' : '') + '">' + esc(c.subject) + '</span></span>' +
+        '<span class="date">' + fmt(lm.ts, false) + '</span></span>' +
+        '<span class="preview clamp">' + (lm.bvk ? 'BVK: ' : 'Sie: ') + esc(lm.text.replace(/\n/g, ' ')) + '</span>' +
+        '<span class="chips"><span class="chip">' + esc(c.topic) + '</span>' +
+        '<span class="badge ' + (open ? 'b-open">Offen' : 'b-closed">Abgeschlossen') + '</span>' +
+        (c.unread ? '<span class="badge b-new">Neue Antwort</span>' : '') +
+        (open && !lm.bvk ? '<span class="wait">Wartet auf Antwort der BVK</span>' : '') +
+        '</span></button></li>';
+    }).join('') + '</ul>';
+
+    if (pages > 1) {
+      var nums = '';
+      for (var i = 1; i <= pages; i++) nums += '<button type="button" class="pg" data-act="page" data-v="' + i + '" aria-label="Seite ' + i + '"' + (i === S.page ? ' aria-current="page"' : '') + '>' + i + '</button>';
+      h += '<nav class="pager" aria-label="Seiten"><span class="range">' + (start + 1) + '–' + Math.min(start + PER, filtered.length) + ' von ' + filtered.length + '</span><span class="btns">' +
+        '<button type="button" class="pg" data-act="page" data-v="' + (S.page - 1) + '" aria-label="Vorherige Seite"' + (S.page === 1 ? ' disabled' : '') + '><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>' +
+        nums +
+        '<button type="button" class="pg" data-act="page" data-v="' + (S.page + 1) + '" aria-label="Nächste Seite"' + (S.page === pages ? ' disabled' : '') + '><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>' +
+        '</span></nav>';
+    }
+    document.getElementById('listcol').innerHTML = h;
+  }
+
+  function renderDetail(keep) {
+    var el = document.getElementById('detail'), h;
+    if (S.composing) {
+      var k = keep || { topic: '', subject: '', msg: '' };
+      h = '<form class="newform" data-form="new" novalidate>' +
+        '<div class="row"><h2>Neue <i class="serif">Nachricht</i></h2><button type="button" class="x" aria-label="Schliessen" data-act="cancel">' + ICON_X + '</button></div>' +
+        '<div class="grid2"><div class="fld"><label for="nm-topic">Thema</label><select id="nm-topic" class="field" aria-invalid="' + S.errTopic + '">' +
+        '<option value="">Bitte wählen</option>' + ['1', '2', '3', '16', '9', '8'].map(function (v) { return '<option value="' + v + '"' + (k.topic === v ? ' selected' : '') + '>' + TOPICS[v] + '</option>'; }).join('') +
+        '</select>' + (S.errTopic ? '<span class="err">Bitte wählen Sie ein Thema.</span>' : '') + '</div>' +
+        '<div class="fld"><label for="nm-subject">Betreff</label><input id="nm-subject" class="field" type="text" maxlength="100" value="' + esc(k.subject) + '" aria-invalid="' + S.errSubject + '">' +
+        (S.errSubject ? '<span class="err">Bitte geben Sie einen Betreff ein.</span>' : '') + '</div></div>' +
+        '<div class="fld"><label for="nm-msg">Ihre Nachricht</label><textarea id="nm-msg" class="field" rows="7" maxlength="2000" aria-invalid="' + S.errMsg + '">' + esc(k.msg) + '</textarea>' +
+        '<span class="cbar hint"><span>' + (S.errMsg ? '<span class="err">Bitte schreiben Sie eine Nachricht.</span>' : '') + '</span><span data-count="nm-msg">' + k.msg.length + ' / 2000</span></span></div>' +
+        '<p class="hint" style="margin:0;line-height:1.5">Bitte senden Sie keine Passwörter oder Kontonummern. Für Dokumente nutzen Sie den Bereich <a href="#">Dokumente</a>.</p>' +
+        '<div style="display:flex;flex-wrap:wrap;gap:12px"><button type="submit" class="btn btn-primary" style="padding:0 32px">Senden</button><button type="button" class="btn btn-outline" data-act="cancel">Abbrechen</button></div>' +
+        '</form>';
+      el.innerHTML = h;
+      return;
+    }
+    var c = byId(S.selectedId);
+    if (!c) {
+      el.innerHTML = '<div class="none"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#675e54" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"/></svg><p style="margin:0">Wählen Sie links eine Nachricht aus oder schreiben Sie uns eine neue.</p></div>';
+      return;
+    }
+    var open = c.status === 'open', draft = keep ? keep.draft : '';
+    h = '<div class="dhead"><h2>' + esc(c.subject) + '</h2><div class="meta"><span>' + esc(c.topic) + '</span><span aria-hidden="true">·</span><span>Eröffnet ' + fmt(c.messages[0].ts, false) + '</span><span aria-hidden="true">·</span>' +
+      '<span class="hb ' + (open ? 'hb-open">Offen' : 'hb-closed">Abgeschlossen') + '</span></div></div>' +
+      '<div class="log" role="log" aria-label="Verlauf: ' + esc(c.subject) + '">' + c.messages.map(function (m) {
+        return '<div class="msg ' + (m.bvk ? 'bvk' : 'me') + '"><span class="who"><strong>' + (m.bvk ? 'BVK' : 'Sie') + '</strong> · ' + fmt(m.ts, true) + '</span>' +
+          '<div class="bubble">' + esc(m.text) + '</div>' + (m.pending ? '<span class="pending">Gesendet – wird an die BVK übermittelt</span>' : '') + '</div>';
+      }).join('') + '</div><div class="foot">';
+    if (!open && !S.reopen) {
+      h += '<div class="closedbox"><div class="txt"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#004899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:2px"><path d="M20 6L9 17l-5-5"/></svg>' +
+        '<span>Diese Anfrage ist abgeschlossen. Haben Sie noch eine Frage dazu? Wenn Sie antworten, wird die Anfrage wieder geöffnet.</span></div>' +
+        '<button type="button" class="btn btn-outline" style="min-height:48px;font-size:17px;padding:0 24px" data-act="reopen">Erneut schreiben</button></div>';
+    } else {
+      h += '<form class="composer" data-form="reply" novalidate><label for="reply-msg">Antworten</label>' +
+        '<textarea id="reply-msg" class="field" rows="4" maxlength="2000" aria-invalid="' + S.errDraft + '">' + esc(draft) + '</textarea>' +
+        '<div class="cbar"><span class="hint">' + (S.errDraft ? '<span class="err">Bitte schreiben Sie eine Antwort.</span>' : (!open ? 'Mit dem Senden wird die Anfrage wieder geöffnet.' : '')) + '</span>' +
+        '<span class="right"><span class="hint" data-count="reply-msg">' + draft.length + ' / 2000</span><button type="submit" class="btn btn-primary" style="min-height:48px;font-size:17px">Senden</button></span></div></form>';
+    }
+    el.innerHTML = h + '</div>';
+  }
+
+  function render() { renderList(); renderDetail(); }
+
+  var tTimer;
+  function toast(msg) {
+    var t = document.getElementById('toast');
+    t.innerHTML = '<div class="toast">' + esc(msg) + '</div>';
+    clearTimeout(tTimer);
+    tTimer = setTimeout(function () { t.innerHTML = ''; }, 3500);
+  }
+
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-act]');
+    if (!b || b.disabled) return;
+    var a = b.getAttribute('data-act'), v = b.getAttribute('data-v');
+    if (a === 'filter') { S.filter = v; S.page = 1; renderList(); }
+    else if (a === 'page') { S.page = +v; renderList(); }
+    else if (a === 'select') {
+      S.selectedId = v; S.composing = false; S.reopen = false; S.errDraft = false;
+      byId(v).unread = false; render();
+      if (window.innerWidth < 960) document.getElementById('detail').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    else if (a === 'new') {
+      S.composing = true; S.errTopic = S.errSubject = S.errMsg = false; render();
+      document.getElementById('nm-topic').focus();
+    }
+    else if (a === 'cancel') { S.composing = false; render(); }
+    else if (a === 'reopen') { S.reopen = true; renderDetail(); document.getElementById('reply-msg').focus(); }
+  });
+
+  document.addEventListener('input', function (e) {
+    var id = e.target.id, cnt = document.querySelector('[data-count="' + id + '"]');
+    if (cnt) cnt.textContent = e.target.value.length + ' / 2000';
+    if (e.target.getAttribute('aria-invalid') === 'true') e.target.setAttribute('aria-invalid', 'false');
+  });
+
+  document.addEventListener('submit', function (e) {
+    var f = e.target.getAttribute('data-form');
+    if (!f) return;
+    e.preventDefault();
+    if (f === 'new') {
+      var k = { topic: document.getElementById('nm-topic').value, subject: document.getElementById('nm-subject').value.trim(), msg: document.getElementById('nm-msg').value.trim() };
+      S.errTopic = !k.topic; S.errSubject = !k.subject; S.errMsg = !k.msg;
+      if (S.errTopic || S.errSubject || S.errMsg) { renderDetail(k); return; }
+      var id = 'n' + Date.now();
+      S.cases.unshift({ id: id, subject: k.subject, topic: TOPICS[k.topic], status: 'open', unread: false,
+        messages: [{ bvk: false, text: k.msg, ts: Date.now(), pending: true }] });
+      S.selectedId = id; S.composing = false; S.filter = 'offen'; S.page = 1;
+      render(); toast('Ihre Nachricht wurde gesendet.');
+    } else {
+      var text = document.getElementById('reply-msg').value.trim(), c = byId(S.selectedId);
+      if (!text) { S.errDraft = true; renderDetail({ draft: '' }); return; }
+      var wasClosed = c.status === 'closed';
+      c.status = 'open'; c.messages.push({ bvk: false, text: text, ts: Date.now(), pending: true });
+      S.errDraft = false; S.reopen = false;
+      if (wasClosed) { S.filter = 'offen'; S.page = 1; }
+      render(); toast(wasClosed ? 'Antwort gesendet – die Anfrage ist wieder offen.' : 'Ihre Antwort wurde gesendet.');
+    }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
